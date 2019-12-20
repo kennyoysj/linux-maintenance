@@ -1,0 +1,48 @@
+## nginx 配置
+1. 关于http-> https跳转
+```
+server {
+    listen 80;
+    listen [::]:80;
+    server_name website.com;
+    #return 301 https://$server_name$request_uri;
+    rewrite ^(.*) https://$server_name$1 permanent;
+}
+```
+2. https配置
+```
+# 这里的ssl_protocols 如果要做为微信的服务器则TLS的版本必须为1.2以上
+# ssl_protocols        SSLv3 TLSv1.2;
+server{
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name pgrab.cn;
+    ssl_certificate /etc/nginx/ssl/Nginx/1_pgrab.cn_bundle.crt;
+    ssl_certificate_key /etc/nginx/ssl/Nginx/2_pgrab.cn.key;
+    ssl_protocols        SSLv3 TLSv1;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    location / {
+	    root /var/www/html/;
+	    #proxy_redirect off;
+	    #proxy_pass  http://vs1;
+	    proxy_set_header   X-Real-IP            $remote_addr;
+	    proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+	    proxy_set_header   X-Forwarded-Proto $scheme;
+	    proxy_set_header   Host                   $host;
+		proxy_set_header   REMOTE-HOST            $remote_addr;
+	    proxy_set_header   X-NginX-Proxy    true;
+	    proxy_set_header   Connection "";
+	    proxy_http_version 1.1;
+	    # First attempt to serve request as file, then
+	    # as directory, then fall back to displaying a 404.
+	    try_files $uri $uri/ =404;
+    }
+    location /pgrabServer/ {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host       $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
