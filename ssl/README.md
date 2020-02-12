@@ -6,7 +6,7 @@ wget https://dl.eff.org/certbot-auto
 # 设置为可执行
 chmod a+x certbot-auto
 # 自动部署
-./certbot-auto
+./certbot-auto certonly
 ```
 部署过程中会出现多次选择确认，根据自己的需求确认即可
 成功后会提示
